@@ -5,6 +5,8 @@ import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,6 +24,7 @@ public class MainActivity extends ActionBarActivity {
     TextView choiceTextView;
     List<String> choices;
     List<String> remainingLocations;
+    Button skipButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +33,26 @@ public class MainActivity extends ActionBarActivity {
         setupWidgets();
         loadChoices();
         loadPossibleLocations();
+        setClickListenerForImage();
+        setClickListenerForSkipButton();
+    }
+
+    private void setClickListenerForSkipButton() {
+        skipButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setNewImage(false);
+            }
+        });
+    }
+
+    private void setClickListenerForImage() {
+        locationImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                loadNewImage();
+            }
+        });
     }
 
     private void loadPossibleLocations() {
@@ -67,6 +90,7 @@ public class MainActivity extends ActionBarActivity {
     private void setupWidgets() {
         locationImageView = (ImageView)findViewById(R.id.location);
         choiceTextView = (TextView)findViewById(R.id.choice);
+        skipButton = (Button)findViewById(R.id.skip_button);
     }
 
     @Override
@@ -76,13 +100,35 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void loadNewImage() {
+        closeIfDone();
+
         choiceTextView.setText(choices.get(0));
         choices.remove(0);
-        setNewImage();
+        setNewImage(true);
     }
 
-    private void setNewImage() {
-        int resID = getResources().getIdentifier(remainingLocations.get(0), "drawable",  getPackageName());
+    private void closeIfDone() {
+        if(choices.isEmpty()) {
+            Toast.makeText(this, "No more choices!", Toast.LENGTH_SHORT);
+            finish();
+        }
+    }
+
+    private void setNewImage(boolean removeImage) {
+        closeIfNoMoreImages();
+
+        int resID = getResources().getIdentifier(remainingLocations.get(0), "drawable", getPackageName());
         locationImageView.setImageResource(resID);
+
+        if (removeImage) {
+            remainingLocations.remove(0);
+        }
+    }
+
+    private void closeIfNoMoreImages() {
+        if(remainingLocations.isEmpty()) {
+            Toast.makeText(this, "No more locations!", Toast.LENGTH_SHORT);
+            finish();
+        }
     }
 }
